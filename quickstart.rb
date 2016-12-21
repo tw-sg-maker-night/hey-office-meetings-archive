@@ -9,7 +9,7 @@ APPLICATION_NAME = 'Google Calendar API Ruby Quickstart'
 CLIENT_SECRETS_PATH = 'client_secret.json'
 CREDENTIALS_PATH = File.join(Dir.home, '.credentials',
                              "calendar-ruby-quickstart.yaml")
-SCOPE = Google::Apis::CalendarV3::AUTH_CALENDAR_READONLY
+SCOPE = Google::Apis::CalendarV3::AUTH_CALENDAR
 
 ##
 # Ensure valid credentials, either by restoring from the saved credentials
@@ -58,3 +58,32 @@ response.items.each do |event|
   start = event.start.date || event.start.date_time
   puts "- #{event.summary} (#{start})"
 end
+
+
+
+
+event = Google::Apis::CalendarV3::Event.new({
+  summary: 'Hey Office Test',
+  location: 'Ni Hao',
+  description: 'Just testing the Ni Hao room allocation',
+  start: {
+    date_time: '2016-12-21T10:00:00',
+    time_zone: 'Asia/Singapore',
+  },
+  end: {
+    date_time: '2016-12-21T11:00:00',
+    time_zone: 'Asia/Singapore',
+  },
+  recurrence: [],
+  attendees: [
+    {email: 'hnwah@thoughtworks.com'},
+    {email: 'thoughtworks.com_3439353432373934323230@resource.calendar.google.com'},
+  ],
+  reminders: {
+    use_default: false,
+    overrides: [],
+  },
+})
+
+result = service.insert_event('primary', event)
+puts "Event created: #{result.html_link}"
