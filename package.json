@@ -1,0 +1,17 @@
+{
+  "name": "hey_office_meetings",
+  "version": "1.0.0",
+  "description": "Making a meeting room booking couldn't be easier",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Col Harris",
+  "license": "ISC",
+  "dependencies": {
+    "google-auth-library": "^0.9.10",
+    "googleapis": "^15.0.0",
+    "moment": "^2.17.1",
+    "promise": "^7.1.1"
+  }
+}
