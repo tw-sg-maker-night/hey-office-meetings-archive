@@ -4,6 +4,13 @@ var google = require('googleapis');
 var googleAuth = require('google-auth-library');
 var moment = require('moment');
 var Promise = require('promise');
+var util = require('util');
+
+const rooms = {
+  "Ni Hao": { name: "Ni Hao", email: "thoughtworks.com_3439353432373934323230@resource.calendar.google.com", capacity: 8, phone: "+65 6513 6961"},
+  "Selamat Datang": { name: "Selamat Datang", email: "charris@thoughtworks.com", capacity: 4, phone: "+65 6513 6962"},
+  "Vanakkam": { name: "Vanakkam", email: "charris@thoughtworks.com", capacity: 2, phone: "+65 6513 6974"}
+}
 
 function authorize() {
   return new Promise(function (fulfill, reject) {
@@ -41,7 +48,7 @@ function createEvent(auth, title, room, start, end) {
           summary: title,
           description: "Booked via Hey Office!",
           attendees: [
-            {email: "thoughtworks.com_3439353432373934323230@resource.calendar.google.com"}
+            {email: rooms[room].email}
           ]
       }},
       function (err, calendarEvent) {
@@ -62,6 +69,10 @@ function validateData(data) {
 
     if (!data.room) {
       return "Missing required param: room";
+    }
+
+    if (!rooms[data.room]) {
+      return "Could not find room called "+data.room;
     }
 
     if (!data.start) {
@@ -90,7 +101,7 @@ module.exports.create = (event, context, callback) => {
   authorize().then(function(auth) {
     return createEvent(auth, data.title, data.room, data.start, data.end)
   }).then(function(calendarEvent) {
-    console.log("Successfully created a calendar event: " + calendarEvent);
+    console.log("Successfully created a calendar event: " + util.inspect(calendarEvent));
     callback(null, {
         statusCode: 200,
         headers: {},
