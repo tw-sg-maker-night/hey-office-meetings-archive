@@ -172,7 +172,7 @@ function checkAvailableRooms(auth, start, end){
   });
 };
 
-function humanizeResults(roomNames) {
+function humanizeAvailableRoomResults(roomNames) {
   if(roomNames.length === 0) {
     return 'No room are available';
   }
@@ -196,10 +196,10 @@ module.exports.otherAvailableRooms = (event, context, callback) => {
   authorize().then(function(auth) {
     return checkAvailableRooms(auth, data.start, data.end);
   }).then(function(response){
-    console.log("Successfully checked for available rooms: " + util.inspect(response));
+    console.log("Successfully checked for available rooms: " + util.inspect(response, {depth: null}));
 
     var availableRooms = processAvailableRoomsResponse(response);
-    var message = humanizeResults(availableRooms);
+    var message = humanizeAvailableRoomResults(availableRooms);
 
     callback(null, {
         statusCode: 200,
