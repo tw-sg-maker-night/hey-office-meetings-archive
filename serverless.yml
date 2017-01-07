@@ -38,6 +38,14 @@ functions:
           method: post
           cors: true
 
+  otherAvailableRooms:
+    handler: handler.otherAvailableRooms
+    events:
+      - http:
+          path: meetings/otherAvailableRooms
+          method: post
+          cors: true
+
 #    Define function environment variables here
 #    environment:
 #      variable2: value2

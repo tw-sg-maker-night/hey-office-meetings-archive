@@ -116,3 +116,39 @@ module.exports.create = (event, context, callback) => {
     });
   }).done();
 };
+
+module.exports.otherAvailableRooms = (event, context, callback) => {
+  console.log("Request received:\n", JSON.stringify(event));
+  console.log("Context received:\n", JSON.stringify(context));
+
+  const data = JSON.parse(event.body);
+  console.log(data);
+
+  authorize().then(function(auth) {
+    var calendar = google.calendar('v3');
+
+    console.log(moment(data.start).format() + ' ' + moment(data.end).format());
+
+    calendar.freebusy.query({
+      auth: auth,
+      resource: {
+        timeMin: moment(data.start).format(),
+        timeMax: moment(data.end).format(),
+        timeZone: "Asia/Singapore",
+        groupExpansionMax: 10,
+        items:  [
+          {id: 'hnwah@thoughtworks.com'}
+        ]
+      }
+    }, function(err, response) {
+      console.log('fn callbacked')
+      if(err){
+        console.log('err: ' + err);
+      }else{
+        console.log(response);
+      }
+    });
+  }).catch(function(err) {
+    
+  }).done();
+};

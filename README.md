@@ -32,3 +32,5 @@ Using https://serverless.com/
 
 ### Using Serverless invoke function
 1. $ serverless invoke --function create --data '{ "body": "{ \"title\" : \"test\",\"room\" : \"Ni Hao\", \"start\" : \"2017-01-03 08:00+08\",\"end\" : \"2017-01-03 10:00+08\" }" }'
+
+2. $ serverless invoke --function otherAvailableRooms --data '{ "body": "{ \"start\" : \"2017-01-03 08:00+08\",\"end\" : \"2017-01-03 10:00+08\" }" }'
