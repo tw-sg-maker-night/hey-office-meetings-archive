@@ -122,8 +122,7 @@ function roomItems(){
   for(var room in rooms) {
     roomEmails.push(rooms[room]['email']);
   }
-  var formattedEmails = roomEmails.map(function(email){ return {'id': email} });
-  return JSON.stringify(formattedEmails);
+  return roomEmails.map(function(email){ return {'id': email} });
 };
 
 function getRoomNameByEmails(roomEmails) {
