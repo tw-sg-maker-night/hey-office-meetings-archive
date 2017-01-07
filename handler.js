@@ -9,7 +9,7 @@ var util = require('util');
 const rooms = {
   "Ni Hao": { name: "Ni Hao", email: "thoughtworks.com_3439353432373934323230@resource.calendar.google.com", capacity: 8, phone: "+65 6513 6961"},
   "Selamat Datang": { name: "Selamat Datang", email: "charris@thoughtworks.com", capacity: 4, phone: "+65 6513 6962"},
-  "Vanakkam": { name: "Vanakkam", email: "charris@thoughtworks.com", capacity: 2, phone: "+65 6513 6974"}
+  "Vanakkam": { name: "Vanakkam", email: "hnwah@thoughtworks.com", capacity: 2, phone: "+65 6513 6974"}
 }
 
 function authorize() {
@@ -117,38 +117,102 @@ module.exports.create = (event, context, callback) => {
   }).done();
 };
 
+function roomItems(){
+  var roomEmails = [];
+  for(var room in rooms) {
+    roomEmails.push(rooms[room]['email']);
+  }
+  var formattedEmails = roomEmails.map(function(email){ return {'id': email} });
+  return JSON.stringify(formattedEmails);
+};
+
+function getRoomNameByEmails(roomEmails) {
+  var roomNames = [];
+  for(var room in rooms) {
+    if(roomEmails.indexOf(rooms[room]['email']) > -1) {
+      roomNames.push(room);
+    }
+  }
+  return roomNames;
+};
+
+function processAvailableRoomsResponse(response) {
+  var calendars = response['calendars'];
+  var availableRooms = [];
+
+  for(var calendar in calendars) {
+    if(calendars[calendar]['errors'] === undefined && calendars[calendar]['busy'].length === 0 ) {
+      availableRooms.push(calendar);
+    }
+  }
+
+  return getRoomNameByEmails(availableRooms);
+};
+
+function checkAvailableRooms(auth, start, end){
+  return new Promise(function(fulfill, reject) {
+    var calendar = google.calendar('v3');
+
+    calendar.freebusy.query({
+      auth: auth,
+      resource: {
+        timeMin: moment(start).format(),
+        timeMax: moment(end).format(),
+        timeZone: "Asia/Singapore",
+        groupExpansionMax: 10,
+        items:  roomItems()
+      }
+    },
+    function(err, response) {
+      if(err){
+        reject(err);
+      }else{
+        fulfill(response);
+      }
+    });
+  });
+};
+
+function humanizeResults(roomNames) {
+  if(roomNames.length === 0) {
+    return 'No room are available';
+  }
+  else if(roomNames.length > 1) {
+    var tempRoomNames = roomNames.join(', ');
+    var position = tempRoomNames.lastIndexOf(',');
+
+    return tempRoomNames.substring(0, position) + ' and' + tempRoomNames.substring(position+1) + ' are available';
+  }
+  else {
+    return roomNames.toString() + ' is available';
+  }
+}
+
 module.exports.otherAvailableRooms = (event, context, callback) => {
   console.log("Request received:\n", JSON.stringify(event));
   console.log("Context received:\n", JSON.stringify(context));
 
   const data = JSON.parse(event.body);
-  console.log(data);
 
   authorize().then(function(auth) {
-    var calendar = google.calendar('v3');
+    return checkAvailableRooms(auth, data.start, data.end);
+  }).then(function(response){
+    console.log("Successfully checked for available rooms: " + util.inspect(response));
 
-    console.log(moment(data.start).format() + ' ' + moment(data.end).format());
+    var availableRooms = processAvailableRoomsResponse(response);
+    var message = humanizeResults(availableRooms);
 
-    calendar.freebusy.query({
-      auth: auth,
-      resource: {
-        timeMin: moment(data.start).format(),
-        timeMax: moment(data.end).format(),
-        timeZone: "Asia/Singapore",
-        groupExpansionMax: 10,
-        items:  [
-          {id: 'hnwah@thoughtworks.com'}
-        ]
-      }
-    }, function(err, response) {
-      console.log('fn callbacked')
-      if(err){
-        console.log('err: ' + err);
-      }else{
-        console.log(response);
-      }
+    callback(null, {
+        statusCode: 200,
+        headers: {},
+        body: JSON.stringify({message: message})
     });
-  }).catch(function(err) {
-    
+  }).catch(function(err){
+    console.log("Failed to check for available rooms: " + err);
+    callback(err, {
+        statusCode: 400,
+        headers: {},
+        body: JSON.stringify({message: ""+err})
+    });
   }).done();
 };
